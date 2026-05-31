@@ -1,0 +1,92 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global safety net (Default Deny)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Standard helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\- ]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Strict validator for Booking entries (No shadow keys allowed, strict formats)
+    function isValidBooking(data) {
+      return data.keys().hasAll(['fullName', 'phone', 'tripType', 'pickupLocation', 'dropLocation', 'pickupDate', 'pickupTime', 'numberOfDays', 'carType', 'status', 'createdAt', 'userId']) &&
+             data.fullName is string && data.fullName.size() > 0 && data.fullName.size() <= 150 &&
+             data.phone is string && data.phone.size() >= 10 && data.phone.size() <= 20 &&
+             data.tripType is string && data.tripType.size() > 0 && data.tripType.size() <= 150 &&
+             data.pickupLocation is string && data.pickupLocation.size() > 0 && data.pickupLocation.size() <= 250 &&
+             data.dropLocation is string && data.dropLocation.size() > 0 && data.dropLocation.size() <= 250 &&
+             data.pickupDate is string && data.pickupDate.size() > 0 && data.pickupDate.size() <= 50 &&
+             data.pickupTime is string && data.pickupTime.size() > 0 && data.pickupTime.size() <= 50 &&
+             data.numberOfDays is number && data.numberOfDays >= 1 && data.numberOfDays <= 180 &&
+             data.carType in ["Innova Crysta", "Ertiga", "Scorpio", "Other (Specify)"] &&
+             (data.carType != "Other (Specify)" || (data.customCarName is string && data.customCarName.size() >= 0 && data.customCarName.size() <= 100)) &&
+             data.status in ["pending", "confirmed", "cancelled"] &&
+             data.createdAt is string && data.createdAt.size() > 0 && data.createdAt.size() <= 50 &&
+             data.userId is string && data.userId == request.auth.uid &&
+             (!('userEmail' in data) || (data.userEmail is string && data.userEmail.size() <= 150)) &&
+             (!('carQuantity' in data) || (data.carQuantity is number && data.carQuantity >= 1)) &&
+             (!('estimatedPrice' in data) || (data.estimatedPrice is number && data.estimatedPrice >= 0)) &&
+             (!('appliedDiscountPercent' in data) || (data.appliedDiscountPercent is number && data.appliedDiscountPercent >= 0));
+    }
+
+    // Strict validator for User Profiles
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['fullName', 'phone', 'email', 'updatedAt']) &&
+             data.fullName is string && data.fullName.size() > 0 && data.fullName.size() <= 150 &&
+             data.phone is string && (data.phone.size() == 0 || (data.phone.size() >= 10 && data.phone.size() <= 20)) &&
+             data.email is string && data.email.size() > 0 && data.email.size() <= 150 &&
+             data.updatedAt is string && data.updatedAt.size() > 0 && data.updatedAt.size() <= 50;
+    }
+
+    // Strict validator for Cars
+    function isValidCar(data) {
+      return data.keys().hasAll(['id', 'name', 'category', 'image', 'seats', 'bags', 'features', 'isAvailable']) &&
+             data.id is string && data.id.size() > 0 && data.id.size() <= 100 &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 150 &&
+             data.category is string && data.category.size() > 0 && data.category.size() <= 100 &&
+             data.image is string && data.image.size() > 0 && data.image.size() <= 500 &&
+             data.seats is number && data.seats >= 1 && data.seats <= 50 &&
+             data.bags is number && data.bags >= 0 && data.bags <= 20 &&
+             data.features is list && data.features.size() <= 20 &&
+             data.isAvailable is bool;
+    }
+
+    match /users/{userId} {
+      allow get: if isSignedIn() && request.auth.uid == userId;
+      allow create, update: if isSignedIn() && request.auth.uid == userId && isValidUserProfile(incoming());
+      allow list, delete: if false;
+    }
+
+    match /bookings/{bookingId} {
+      allow get, list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(bookingId) && isValidBooking(incoming());
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid && isValidBooking(incoming()) && (
+        incoming().diff(existing()).affectedKeys().hasOnly(['fullName', 'phone', 'tripType', 'pickupLocation', 'dropLocation', 'pickupDate', 'pickupTime', 'numberOfDays', 'carType', 'customCarName', 'status', 'userEmail', 'carQuantity', 'estimatedPrice', 'appliedDiscountPercent'])
+      );
+      allow delete: if false;
+    }
+
+    match /cars/{carId} {
+      allow get, list: if true;
+      allow create: if isValidId(carId) && isValidCar(incoming());
+      allow update: if isValidId(carId) && isValidCar(incoming());
+      allow delete: if isSignedIn();
+    }
+  }
+}

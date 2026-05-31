@@ -1,0 +1,141 @@
+{
+  "entities": {
+    "booking": {
+      "title": "Booking",
+      "description": "A custom luxury car rental booking entry for Tashu Travels associated with a user",
+      "type": "object",
+      "properties": {
+        "fullName": {
+          "type": "string",
+          "description": "The client's full contact name"
+        },
+        "phone": {
+          "type": "string",
+          "description": "The client's phone number starting with +91 or appropriate"
+        },
+        "tripType": {
+          "type": "string",
+          "enum": ["Local", "Outstation One-Way", "Outstation Round-Trip", "Airport Transfer"],
+          "description": "The selected category of trip"
+        },
+        "pickupLocation": {
+          "type": "string",
+          "description": "Starting travel point"
+        },
+        "dropLocation": {
+          "type": "string",
+          "description": "Destination routing end point"
+        },
+        "pickupDate": {
+          "type": "string",
+          "description": "Scheduled departure date"
+        },
+        "pickupTime": {
+          "type": "string",
+          "description": "Scheduled departure time of day"
+        },
+        "numberOfDays": {
+          "type": "number",
+          "description": "Duration length of rental in days"
+        },
+        "carType": {
+          "type": "string",
+          "enum": ["Innova Crysta", "Ertiga", "Scorpio", "Other (Specify)"],
+          "description": "Preferred standard car model"
+        },
+        "customCarName": {
+          "type": "string",
+          "description": "Details of the car if Other is selected"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "confirmed", "cancelled"],
+          "description": "Current status tracking of the booking"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Audit control timestamp of when this was requested"
+        },
+        "userId": {
+          "type": "string",
+          "description": "The authenticated user's UID"
+        },
+        "userEmail": {
+          "type": "string",
+          "description": "The email of the authenticated user"
+        }
+      },
+      "required": ["fullName", "phone", "tripType", "pickupLocation", "pickupDate", "pickupTime", "numberOfDays", "carType", "status", "createdAt", "userId"]
+    },
+    "userProfile": {
+      "title": "User Profile",
+      "description": "Secure profile data representing user contact and account details",
+      "type": "object",
+      "properties": {
+        "fullName": {
+          "type": "string",
+          "description": "User's full name"
+        },
+        "phone": {
+          "type": "string",
+          "description": "User's contact number"
+        },
+        "email": {
+          "type": "string",
+          "description": "User's synchronized email address"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating the last profile update"
+        }
+      },
+      "required": ["fullName", "phone", "email", "updatedAt"]
+    },
+    "car": {
+      "title": "Fleet Automobile",
+      "description": "Dynamically fetched premium fleet car",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "seats": {
+          "type": "number"
+        },
+        "bags": {
+          "type": "number"
+        },
+        "features": {
+          "type": "array"
+        },
+        "isAvailable": {
+          "type": "boolean"
+        }
+      },
+      "required": ["id", "name", "category", "image", "seats", "bags", "features", "isAvailable"]
+    }
+  },
+  "firestore": {
+    "bookings/{bookingId}": {
+      "schema": "booking",
+      "description": "Table for recording incoming bookings"
+    },
+    "users/{userId}": {
+      "schema": "userProfile",
+      "description": "Secure collection of user profile details"
+    },
+    "cars/{carId}": {
+      "schema": "car",
+      "description": "Premium fleet cars collection"
+    }
+  }
+}
