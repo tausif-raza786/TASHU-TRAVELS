@@ -1,10 +1,10 @@
 {
-  "projectId": "xenon-bond-kfbwx",
-  "appId": "1:91950292144:web:9064f492aea53e860b2f75",
-  "apiKey": "AIzaSyA-dKOG7tiVOJZF0dDHUdesZbApaIuRluA",
-  "authDomain": "xenon-bond-kfbwx.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-4dc1258a-099d-460b-8fb9-fd6097c8db39",
-  "storageBucket": "xenon-bond-kfbwx.firebasestorage.app",
-  "messagingSenderId": "91950292144",
-  "measurementId": ""
+  "projectId": "tashu-travels-web",
+  "appId": "1:204460956685:web:498fe150e97a0ff2d24944",
+  "apiKey": "AIzaSyCt_PQIEvFvaYBNry1EHj37gK51UfvBZDo",
+  "authDomain": "tashu-travels-web.firebaseapp.com",
+  "firestoreDatabaseId": "",
+  "storageBucket": "tashu-travels-web.firebasestorage.app",
+  "messagingSenderId": "204460956685",
+  "measurementId": "G-FFTJKWK1E3"
 }
